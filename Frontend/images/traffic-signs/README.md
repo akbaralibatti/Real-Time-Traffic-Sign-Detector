@@ -1,0 +1,1 @@
+Place the 11 traffic-sign logo images in this folder using these exact filenames: cross_road.png, gap_in_median.png, hump.png, left_hand_curve.png, men_at_work.png, narrow_bridge.png, pedestrian.png, right_hand_curve.png, school_ahead.png, side_road_left.png, side_road_right.png. Logos are optional until supplied.

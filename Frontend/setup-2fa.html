@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Setup 2FA — Real-time Traffic Sign Recognition System</title>
+  <link rel="stylesheet" href="css/style.css?v=20261012"/>
+</head>
+<body class="auth-page">
+<div id="toast-container"></div>
+
+<div class="auth-card" style="max-width:520px">
+  <div class="auth-logo">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="color:var(--accent)">
+      <circle cx="18" cy="18" r="18" fill="var(--accent-subtle)"/>
+      <polygon points="18,6 30,27 6,27" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="18" cy="22" r="2" fill="currentColor"/>
+      <rect x="17" y="13" width="2" height="6" rx="1" fill="currentColor"/>
+    </svg>
+    <div class="auth-logo-text">TrafficSign <span>System</span></div>
+  </div>
+
+  <h1 class="auth-title">Set up two-factor authentication</h1>
+  <p class="auth-subtitle">Scan the QR code with Google Authenticator or Authy, then enter the code to confirm</p>
+
+  <!-- Step 1: Generate QR -->
+  <div id="step-1">
+    <button id="generate-btn" class="btn btn-primary btn-full btn-lg">Generate QR Code</button>
+  </div>
+
+  <!-- Step 2: Show QR -->
+  <div id="step-2" class="hidden text-center">
+    <div class="qr-container" id="qr-wrapper">
+      <img id="qr-img" src="" alt="TOTP QR Code" width="200" height="200"/>
+    </div>
+
+    <div class="alert alert-info" style="text-align:left">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Can't scan? Add manually: <span class="font-mono text-xs" id="totp-secret" style="word-break:break-all"></span>
+    </div>
+
+    <div class="form-group" style="margin-top:var(--space-5);text-align:left">
+      <label class="form-label">Enter the 6-digit code from your app</label>
+      <div class="otp-inputs" style="justify-content:flex-start">
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c0"/>
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c1"/>
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c2"/>
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c3"/>
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c4"/>
+        <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" id="c5"/>
+      </div>
+    </div>
+
+    <div id="alert-box" class="alert alert-danger hidden" style="text-align:left">
+      <span id="alert-msg"></span>
+    </div>
+
+    <button id="confirm-btn" class="btn btn-primary btn-full btn-lg" style="margin-top:var(--space-4)">Confirm & Enable 2FA</button>
+  </div>
+
+  <!-- Step 3: Backup codes -->
+  <div id="step-3" class="hidden">
+    <div class="alert alert-success">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Two-factor authentication enabled!
+    </div>
+    <p class="text-secondary text-sm" style="margin-bottom:var(--space-4)">
+      Save these backup codes somewhere safe. Each can be used once if you lose your authenticator.
+    </p>
+    <div id="backup-codes-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2);margin-bottom:var(--space-5)"></div>
+    <button id="copy-codes-btn" class="btn btn-secondary mb-4" style="width:100%">Copy All Codes</button>
+    <a href="dashboard.html" class="btn btn-primary btn-full">Go to Dashboard</a>
+  </div>
+
+  <p class="text-center text-sm text-muted" style="margin-top:var(--space-6)">
+    <a href="dashboard.html">← Back to dashboard</a>
+  </p>
+</div>
+
+<script type="module">
+  import { Auth, apiFetch, showToast, requireLogin } from './js/utils.js';
+  const challengeToken = sessionStorage.getItem('tvision_challenge_token');
+  const authenticated = Auth.isLoggedIn();
+  if (!challengeToken && !authenticated) window.location.href = 'index.html';
+
+  document.getElementById('generate-btn').addEventListener('click', async () => {
+    try {
+      const data = await apiFetch('/auth/setup-2fa', { method:'POST', body: challengeToken ? { challenge_token: challengeToken } : {} });
+      document.getElementById('qr-img').src = data.qr_code;
+      document.getElementById('totp-secret').textContent = data.secret;
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+      document.getElementById('c0').focus();
+    } catch (err) {
+      showToast(err.message || 'Failed to generate QR', 'error');
+    }
+  });
+
+  // OTP digit navigation
+  const digits = [0,1,2,3,4,5].map(i => document.getElementById(`c${i}`));
+  digits.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/g,'');
+      if (inp.value && i < 5) digits[i+1].focus();
+    });
+    inp.addEventListener('keydown', e => { if (e.key==='Backspace' && !inp.value && i>0) digits[i-1].focus(); });
+  });
+
+  document.getElementById('confirm-btn').addEventListener('click', async () => {
+    const otp = digits.map(d => d.value).join('');
+    const alertEl  = document.getElementById('alert-box');
+    const alertMsg = document.getElementById('alert-msg');
+    if (otp.length !== 6) { alertEl.classList.remove('hidden'); alertMsg.textContent='Enter the full 6-digit code'; return; }
+
+    const btn = document.getElementById('confirm-btn');
+    btn.classList.add('btn-loading'); btn.disabled = true;
+
+    try {
+      const data = await apiFetch('/auth/confirm-2fa', { method:'POST', body:{ otp, challenge_token: challengeToken } });
+      // Show backup codes
+      const grid = document.getElementById('backup-codes-grid');
+      data.backup_codes.forEach(code => {
+        const el = document.createElement('div');
+        el.textContent = code;
+        el.style.cssText = 'background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 10px;font-family:var(--font-mono);font-size:.78rem;color:var(--text-secondary)';
+        grid.appendChild(el);
+      });
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+
+      window._backupCodes = data.backup_codes;
+      if (data.token && data.user) {
+        Auth.setToken(data.token); Auth.setUser(data.user);
+        sessionStorage.removeItem('tvision_challenge_token');
+        const go = document.querySelector('#step-3 a.btn-primary');
+        if (go) go.href = data.user.role === 'admin' ? 'admin/index.html' : 'dashboard.html';
+      } else {
+        const cached = Auth.getUser() || {}; cached.is_2fa_enabled = 1; Auth.setUser(cached);
+      }
+    } catch (err) {
+      alertEl.classList.remove('hidden'); alertMsg.textContent = err.message || 'Invalid OTP';
+    } finally {
+      btn.classList.remove('btn-loading'); btn.disabled = false;
+    }
+  });
+
+  document.getElementById('copy-codes-btn').addEventListener('click', () => {
+    navigator.clipboard.writeText((window._backupCodes || []).join('\n'));
+    showToast('Backup codes copied!', 'success');
+  });
+</script>
+</body>
+</html>

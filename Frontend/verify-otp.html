@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Two-Factor Verification — Real-time Traffic Sign Recognition System</title>
+  <link rel="stylesheet" href="css/style.css?v=20261012"/>
+</head>
+<body class="auth-page">
+<div id="toast-container"></div>
+
+<div class="auth-card" style="text-align:center">
+  <div class="auth-logo" style="justify-content:center">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none" style="color:var(--accent)">
+      <circle cx="18" cy="18" r="18" fill="var(--accent-subtle)"/>
+      <polygon points="18,6 30,27 6,27" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="18" cy="22" r="2" fill="currentColor"/>
+      <rect x="17" y="13" width="2" height="6" rx="1" fill="currentColor"/>
+    </svg>
+    <div class="auth-logo-text">TrafficSign <span>System</span></div>
+  </div>
+
+  <div style="margin:var(--space-6) auto;width:64px;height:64px;border-radius:50%;background:var(--accent-subtle);display:flex;align-items:center;justify-content:center">
+    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="var(--accent)" stroke-width="2">
+      <rect x="5" y="11" width="14" height="10" rx="2"/>
+      <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+      <circle cx="12" cy="16" r="1" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <h1 class="auth-title">Two-Factor Verification</h1>
+  <p class="auth-subtitle" style="margin-bottom:0">Open your authenticator app and enter the 6-digit code</p>
+
+  <div id="alert-box" class="alert alert-danger hidden" style="text-align:left;margin-top:var(--space-5)">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span id="alert-msg"></span>
+  </div>
+
+  <div class="otp-inputs" id="otp-inputs">
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-0" aria-label="OTP digit 1"/>
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-1" aria-label="OTP digit 2"/>
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-2" aria-label="OTP digit 3"/>
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-3" aria-label="OTP digit 4"/>
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-4" aria-label="OTP digit 5"/>
+    <input class="otp-digit" type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-5" aria-label="OTP digit 6"/>
+  </div>
+
+  <button id="verify-btn" class="btn btn-primary btn-full btn-lg">Verify</button>
+
+  <div style="margin-top:var(--space-6)">
+    <p class="text-sm text-muted">Lost access to your authenticator?</p>
+    <a id="backup-link" href="#" class="text-sm" style="font-weight:600">Use a backup code</a>
+  </div>
+
+  <div id="backup-panel" class="hidden" style="margin-top:var(--space-5);text-align:left">
+    <div class="form-group">
+      <label class="form-label">Backup Recovery Code</label>
+      <input id="backup-code-input" type="text" class="form-input" placeholder="e.g. a1b2c3d4e5f6g7h8" autocomplete="off"/>
+    </div>
+    <button id="backup-btn" class="btn btn-secondary btn-full">Use Backup Code</button>
+  </div>
+
+  <p class="text-sm text-muted" style="margin-top:var(--space-6)">
+    <a href="index.html">← Back to login</a>
+  </p>
+</div>
+
+<script type="module">
+  import { Auth, apiFetch, showToast } from './js/utils.js';
+
+  const challengeToken = sessionStorage.getItem('tvision_challenge_token');
+  if (!challengeToken) window.location.href = 'index.html';
+
+  // OTP keyboard navigation
+  const digits = Array.from(document.querySelectorAll('.otp-digit'));
+  digits.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/g,'');
+      if (inp.value && i < 5) digits[i+1].focus();
+      if (digits.every(d => d.value)) submitOtp();
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) digits[i-1].focus();
+    });
+    inp.addEventListener('paste', e => {
+      e.preventDefault();
+      const t = (e.clipboardData.getData('text').replace(/\D/g,'')).slice(0,6);
+      t.split('').forEach((ch, idx) => { if (digits[idx]) digits[idx].value = ch; });
+      digits[Math.min(t.length, 5)].focus();
+      if (t.length === 6) submitOtp();
+    });
+  });
+  digits[0].focus();
+
+  const alertEl  = document.getElementById('alert-box');
+  const alertMsg = document.getElementById('alert-msg');
+  const verifyBtn= document.getElementById('verify-btn');
+
+  function showError(msg) { alertEl.classList.remove('hidden'); alertMsg.textContent = msg; }
+
+  async function submitOtp() {
+    const otp = digits.map(d => d.value).join('');
+    if (otp.length !== 6) { showError('Enter the complete 6-digit code.'); return; }
+    verifyBtn.classList.add('btn-loading'); verifyBtn.disabled = true;
+    try {
+      const data = await apiFetch('/auth/verify-otp', { method:'POST', body:{ challenge_token: challengeToken, otp } });
+      Auth.setToken(data.token); Auth.setUser(data.user);
+      sessionStorage.removeItem('tvision_challenge_token');
+      showToast('Verified! Welcome back.', 'success');
+      setTimeout(() => window.location.href = data.user.role === 'admin' ? 'admin/index.html' : 'dashboard.html', 500);
+    } catch (err) {
+      showError(err.message || 'Invalid code. Try again.');
+      digits.forEach(d => { d.value=''; d.classList.add('form-input--error'); });
+      digits[0].focus();
+    } finally {
+      verifyBtn.classList.remove('btn-loading'); verifyBtn.disabled = false;
+    }
+  }
+
+  document.getElementById('verify-btn').addEventListener('click', submitOtp);
+
+  // Backup code panel
+  document.getElementById('backup-link').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('backup-panel').classList.toggle('hidden');
+  });
+
+  document.getElementById('backup-btn').addEventListener('click', async () => {
+    const code = document.getElementById('backup-code-input').value.trim();
+    if (!code) return;
+    try {
+      const data = await apiFetch('/auth/use-backup-code', { method:'POST', body:{ challenge_token: challengeToken, code } });
+      Auth.setToken(data.token); Auth.setUser(data.user);
+      sessionStorage.removeItem('tvision_challenge_token');
+      showToast('Backup code accepted!', 'success');
+      setTimeout(() => window.location.href = data.user.role === 'admin' ? 'admin/index.html' : 'dashboard.html', 500);
+    } catch (err) {
+      showError(err.message || 'Invalid backup code.');
+    }
+  });
+</script>
+</body>
+</html>

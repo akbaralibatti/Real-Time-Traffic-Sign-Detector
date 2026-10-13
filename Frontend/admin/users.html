@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Management — IT303 - Real-Time Traffic Sign Recognition System</title>
+  <meta name="description" content="Manage registered user accounts, roles, security locks, and active sessions."/>
+  <link rel="stylesheet" href="../css/style.css?v=20261012"/>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="app-layout">
+  <!-- ── Sidebar ────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="color:var(--accent)">
+        <circle cx="18" cy="18" r="18" fill="var(--accent-subtle)"/>
+        <polygon points="18,6 30,27 6,27" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="18" cy="22" r="2" fill="currentColor"/>
+        <rect x="17" y="13" width="2" height="6" rx="1" fill="currentColor"/>
+      </svg>
+      <div>
+        <div style="font-size:.9rem;font-weight:700;line-height:1.2">IT303 <span>TrafficSign</span></div>
+        <div style="font-size:.68rem;color:var(--text-muted)">User Management</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="sidebar-section-label">User Portal</span>
+      <a href="../dashboard.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Recognition Dashboard
+      </a>
+
+      <span class="sidebar-section-label" style="margin-top:var(--space-4)">Administration</span>
+      <a href="index.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Overview
+      </a>
+      <a href="users.html" class="nav-item active">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        User Management
+      </a>
+      <a href="logs.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Activity Audit Logs
+      </a>
+      <a href="signs.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Sign Dictionary
+      </a>
+
+      <span class="sidebar-section-label" style="margin-top:var(--space-4)">Account</span>
+      <a href="../profile.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile & Security
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="flex items-center gap-3" style="margin-bottom:var(--space-3)">
+        <div class="avatar" id="sidebar-avatar">AD</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:600" id="sidebar-username">Admin</div>
+          <div class="text-xs text-muted" id="sidebar-role">admin</div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-ghost btn-sm btn-full" style="justify-content:flex-start;gap:var(--space-3)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ───────────────────────────────────────────────── -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">User Accounts & Access Control</div>
+      <div class="topbar-actions">
+        <button id="download-users-report" class="btn btn-secondary btn-sm">Download Report</button>
+        <button id="refresh-users-btn" class="btn btn-secondary btn-sm">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <main class="page-body">
+      <div class="page-header">
+        <h1>User Management</h1>
+        <p>Manage roles, inspect 2FA security posture, unlock locked accounts, and revoke active sessions.</p>
+      </div>
+
+      <div class="card">
+        <!-- Controls -->
+        <div class="card-header" style="flex-wrap:wrap;gap:var(--space-4)">
+          <div class="flex items-center gap-3" style="flex:1;min-width:280px">
+            <div class="form-input-group" style="width:100%">
+              <svg class="input-icon" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="user-search" class="form-input" placeholder="Search by username or email…"/>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <select id="role-filter" class="form-input" style="width:130px;padding:var(--space-2) var(--space-3);font-size:.85rem">
+              <option value="all">All Roles</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+          <table class="table" id="users-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Role</th>
+                <th>2FA Status</th>
+                <th>Security State</th>
+                <th>Last Login</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">
+                  Loading users…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal: Edit User Role -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit User Role</h3>
+      <button class="modal-close" id="edit-modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-sm text-secondary" style="margin-bottom:var(--space-4)" id="edit-modal-desc">
+        Change role permissions for user.
+      </p>
+      <div class="form-group">
+        <label class="form-label" for="edit-role-select">Assigned Role</label>
+        <select id="edit-role-select" class="form-input">
+          <option value="user">user (Standard Access)</option>
+          <option value="admin">admin (Full System Administration)</option>
+        </select>
+      </div>
+      <div class="flex items-center justify-end gap-3" style="margin-top:var(--space-6)">
+        <button id="cancel-edit-btn" class="btn btn-secondary btn-sm">Cancel</button>
+        <button id="save-role-btn" class="btn btn-primary btn-sm">Save Role</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { Auth, apiFetch, showToast, requireAdmin, formatDate } from '../js/utils.js';
+  const API_BASE = (window.TRAFFICVISION_API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
+
+  if (!requireAdmin()) { /* redirected */ }
+
+  const currentUser = Auth.getUser();
+  if (currentUser) {
+    document.getElementById('sidebar-username').textContent = currentUser.username;
+    document.getElementById('sidebar-role').textContent = currentUser.role || 'admin';
+    document.getElementById('sidebar-avatar').textContent = (currentUser.username || 'AD').slice(0, 2).toUpperCase();
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await apiFetch('/auth/logout', { method: 'POST' }); } catch (_) {}
+    Auth.clear();
+    window.location.href = '../index.html';
+  });
+
+  let allUsers = [];
+  let editingUserId = null;
+
+  async function loadUsers() {
+    const tbody = document.getElementById('users-tbody');
+    try {
+      const data = await apiFetch('/admin/users');
+      allUsers = data.users || [];
+      renderUsers();
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--danger)">Failed to load users: ${err.message || 'Error'}</td></tr>`;
+    }
+  }
+
+  function renderUsers() {
+    const query = document.getElementById('user-search').value.trim().toLowerCase();
+    const roleFilter = document.getElementById('role-filter').value;
+    const tbody = document.getElementById('users-tbody');
+
+    const filtered = allUsers.filter(u => {
+      const roleMatch = roleFilter === 'all' || u.role === roleFilter;
+      const qMatch = !query ||
+        (u.username && u.username.toLowerCase().includes(query)) ||
+        (u.email && u.email.toLowerCase().includes(query));
+      return roleMatch && qMatch;
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No users found matching filter.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(u => {
+      const isLocked = u.account_locked_until && new Date(u.account_locked_until) > new Date();
+      const lockBadge = isLocked
+        ? `<span class="badge badge-red">Locked</span>`
+        : (u.is_active === 0 || u.is_active === false ? `<span class="badge badge-red">Banned</span>` : `<span class="badge badge-green">Active</span>`);
+
+      const tfaBadge = u.is_2fa_enabled
+        ? `<span class="badge badge-green">2FA Enabled</span>`
+        : `<span class="badge badge-muted">No 2FA</span>`;
+
+      const roleBadge = u.role === 'admin'
+        ? `<span class="badge badge-cyan">Admin</span>`
+        : `<span class="badge badge-muted">User</span>`;
+
+      const isSelf = currentUser && u.user_id === currentUser.user_id;
+
+      return `
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="avatar" style="width:34px;height:34px;font-size:.8rem">
+                ${(u.username || 'U').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:.9rem">${escapeHtml(u.username)}</div>
+                <div class="text-xs text-muted">${escapeHtml(u.email)}</div>
+              </div>
+            </div>
+          </td>
+          <td>${roleBadge}</td>
+          <td>${tfaBadge}</td>
+          <td>
+            ${lockBadge}
+            ${u.failed_login_attempts > 0 ? `<span class="text-xs text-muted" style="display:block;margin-top:2px">${u.failed_login_attempts} failed</span>` : ''}
+          </td>
+          <td style="font-size:.85rem">${formatDate(u.last_login_at)}</td>
+          <td style="font-size:.85rem">${formatDate(u.created_at)}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-secondary btn-sm edit-role-btn" data-id="${u.user_id}" data-name="${escapeHtml(u.username)}" data-role="${u.role}">
+                Role
+              </button>
+              ${isLocked ? `
+                <button class="btn btn-secondary btn-sm unlock-btn" data-id="${u.user_id}">
+                  Unlock
+                </button>
+              ` : ''}
+              <button class="btn btn-secondary btn-sm revoke-btn" data-id="${u.user_id}" title="Revoke all active sessions for this user">
+                Revoke
+              </button>
+              ${!isSelf && u.role !== 'admin' ? `
+                <button class="btn btn-secondary btn-sm ban-btn" data-id="${u.user_id}" data-active="${u.is_active === 0 || u.is_active === false ? '0' : '1'}">${u.is_active === 0 || u.is_active === false ? 'Unban' : 'Ban'}</button>
+                <button class="btn btn-danger btn-sm delete-btn" data-id="${u.user_id}" data-name="${escapeHtml(u.username)}">
+                  Delete
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Attach listeners
+    tbody.querySelectorAll('.edit-role-btn').forEach(b => {
+      b.addEventListener('click', () => openRoleModal(b.dataset.id, b.dataset.name, b.dataset.role));
+    });
+
+    tbody.querySelectorAll('.unlock-btn').forEach(b => {
+      b.addEventListener('click', () => unlockUser(b.dataset.id));
+    });
+
+    tbody.querySelectorAll('.revoke-btn').forEach(b => { b.addEventListener('click', () => revokeUserSessions(b.dataset.id)); });
+    tbody.querySelectorAll('.ban-btn').forEach(b => { b.addEventListener('click', async () => {
+      try { await apiFetch(`/admin/users/${b.dataset.id}`, { method:'PATCH', body:{ is_active: b.dataset.active === '0' } });
+        await apiFetch(`/admin/users/${b.dataset.id}/revoke-sessions`, { method:'POST' });
+        showToast(b.dataset.active === '0' ? 'Account unbanned' : 'Account banned; sessions revoked', 'success'); loadUsers();
+      } catch (err) { showToast(err.message || 'Could not update account', 'error'); }
+    }); });
+
+    tbody.querySelectorAll('.delete-btn').forEach(b => {
+      b.addEventListener('click', () => deleteUser(b.dataset.id, b.dataset.name));
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Modal: Role edit
+  const editModal = document.getElementById('edit-modal');
+  const modalClose = document.getElementById('edit-modal-close');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  [modalClose, cancelBtn].forEach(b => b.addEventListener('click', () => editModal.classList.add('hidden')));
+
+  function openRoleModal(userId, username, role) {
+    editingUserId = userId;
+    document.getElementById('edit-modal-desc').textContent = `Change role for user ${username} (#${userId}):`;
+    document.getElementById('edit-role-select').value = role || 'user';
+    editModal.classList.remove('hidden');
+  }
+
+  document.getElementById('save-role-btn').addEventListener('click', async () => {
+    if (!editingUserId) return;
+    const newRole = document.getElementById('edit-role-select').value;
+    try {
+      await apiFetch(`/admin/users/${editingUserId}`, {
+        method: 'PATCH',
+        body: { role: newRole }
+      });
+      showToast(`User role updated to ${newRole}!`, 'success');
+      editModal.classList.add('hidden');
+      loadUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to update role', 'error');
+    }
+  });
+
+  async function unlockUser(userId) {
+    try {
+      await apiFetch(`/admin/users/${userId}/unlock`, { method: 'POST' });
+      showToast('Account successfully unlocked.', 'success');
+      loadUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to unlock account', 'error');
+    }
+  }
+
+  async function revokeUserSessions(userId) {
+    if (!confirm(`Revoke all active sessions for User #${userId}?`)) return;
+    try {
+      await apiFetch(`/admin/users/${userId}/revoke-sessions`, { method: 'POST' });
+      showToast('All sessions for this user have been revoked.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to revoke sessions', 'error');
+    }
+  }
+
+  async function deleteUser(userId, username) {
+    if (!confirm(`Are you sure you want to permanently delete user "${username}" (ID: ${userId})? This will also remove associated sessions and logs.`)) return;
+    try {
+      await apiFetch(`/admin/users/${userId}`, { method: 'DELETE' });
+      showToast(`User ${username} deleted successfully.`, 'success');
+      loadUsers();
+    } catch (err) {
+      showToast(err.message || 'Failed to delete user', 'error');
+    }
+  }
+
+  document.getElementById('user-search').addEventListener('input', renderUsers);
+  document.getElementById('role-filter').addEventListener('change', renderUsers);
+  document.getElementById('refresh-users-btn').addEventListener('click', loadUsers);
+  document.getElementById('download-users-report').addEventListener('click', async () => {
+    try { const response = await fetch(`${API_BASE}/admin/users/report.csv`, { headers:{ Authorization:`Bearer ${Auth.getToken()}` } });
+      if (!response.ok) throw new Error('Report download failed');
+      const blob = await response.blob(); const url = URL.createObjectURL(blob); const a = document.createElement('a');
+      a.href = url; a.download = 'trafficvision-users.csv'; a.click(); URL.revokeObjectURL(url);
+    } catch (err) { showToast(err.message || 'Report download failed', 'error'); }
+  });
+
+  loadUsers();
+</script>
+</body>
+</html>

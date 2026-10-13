@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Real-time Traffic Sign Recognition System</title>
+  <meta name="description" content="Real-time Traffic Sign Recognition System for IT303: Software Engineering."/>
+  <link rel="stylesheet" href="css/style.css?v=20261012"/>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="app-layout">
+  <!-- ── Sidebar ────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="color:var(--accent)">
+        <circle cx="18" cy="18" r="18" fill="var(--accent-subtle)"/>
+        <polygon points="18,6 30,27 6,27" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="18" cy="22" r="2" fill="currentColor"/>
+        <rect x="17" y="13" width="2" height="6" rx="1" fill="currentColor"/>
+      </svg>
+      <div>
+        <div style="font-size:.9rem;font-weight:700;line-height:1.2">TrafficSign <span>System</span></div>
+        <div style="font-size:.68rem;color:var(--text-muted)">Real-time Recognition</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="sidebar-section-label">Main</span>
+      <a href="dashboard.html" class="nav-item active">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="history.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        Session History
+      </a>
+      <a href="signs.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Sign Dictionary
+      </a>
+
+      <span class="sidebar-section-label" style="margin-top:var(--space-4)">Account</span>
+      <a href="profile.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile & Security
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="flex items-center gap-3" style="margin-bottom:var(--space-3)">
+        <div class="avatar" id="sidebar-avatar">JD</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:600" id="sidebar-username">Loading…</div>
+          <div class="text-xs text-muted" id="sidebar-role">user</div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-ghost btn-sm btn-full" style="justify-content:flex-start;gap:var(--space-3)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main ──────────────────────────────────────────────────────── -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="flex items-center gap-3">
+        <button id="menu-toggle" class="btn btn-ghost btn-sm" aria-label="Menu" style="display:none">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-title">Real-time Traffic Sign Recognition System</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="badge badge-cyan" id="ml-mode-badge">STUB MODE</span>
+        <span class="badge badge-muted" id="session-badge">No session</span>
+      </div>
+    </header>
+
+    <main class="page-body">
+      <!-- Project & Course Info Banner -->
+      <div class="card" style="margin-bottom:var(--space-5);padding:var(--space-4) var(--space-5);background:linear-gradient(135deg, var(--bg-surface), var(--bg-elevated));border:1px solid var(--border)">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--space-3)">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+              <span style="font-size:1.1rem;font-weight:700;color:var(--text-primary)">Real-time Traffic Sign Recognition System</span>
+              <span class="badge badge-cyan" style="font-size:.75rem">IT303: Software Engineering</span>
+            </div>
+            <div style="font-size:.85rem;color:var(--text-secondary);display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+              <span style="font-weight:600;color:var(--text-muted)">Project Team:</span>
+              <span>Rigved Patil <strong style="color:var(--accent);font-family:var(--font-mono)">(241IT052)</strong></span>
+              <span style="color:var(--border)">|</span>
+              <span>Akbarali Batti <strong style="color:var(--accent);font-family:var(--font-mono)">(241IT014)</strong></span>
+              <span style="color:var(--border)">|</span>
+              <span>Salim Moh <strong style="color:var(--accent);font-family:var(--font-mono)">(241IT068)</strong></span>
+            </div>
+          </div>
+          <div id="user-2fa-pill"></div>
+        </div>
+      </div>
+
+      <!-- 2FA Warning Banner if 2FA is inactive -->
+      <div id="twofa-warning-alert" class="alert alert-warning hidden" style="margin-bottom:var(--space-5);justify-content:space-between;align-items:center;padding:12px 18px;border-radius:var(--radius-md);flex-wrap:wrap;gap:12px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div>
+            <strong>Two-Factor Authentication (2FA) is not active on this account.</strong>
+            <span class="text-sm" style="opacity:0.9;display:block">Enable Google Authenticator / Authy to require a 6-digit OTP every time you log in.</span>
+          </div>
+        </div>
+        <a href="setup-2fa.html" class="btn btn-sm btn-primary" style="white-space:nowrap">Set Up 2FA Now</a>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs" id="mode-tabs">
+        <button class="tab-btn active" data-tab="live">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+          Live Camera
+        </button>
+        <button class="tab-btn" data-tab="upload">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;margin-right:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Video
+        </button>
+      </div>
+
+      <!-- Live Camera Tab -->
+      <div class="tab-panel active" id="tab-live">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-6)">
+          <!-- Feed -->
+          <div>
+            <div class="feed-wrapper" id="feed-wrapper">
+              <video id="videoEl" autoplay playsinline muted></video>
+              <canvas id="canvasEl"></canvas>
+              <div class="feed-overlay-text" id="feed-placeholder">
+                <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="var(--text-muted)" stroke-width="1.5"><path d="M23 7 16 12 23 17V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                <p class="text-muted">Camera not started</p>
+              </div>
+              <div class="fps-badge hidden" id="fps-badge">0 FPS</div>
+              <div class="mode-badge hidden" id="mode-badge">STUB</div>
+            </div>
+
+            <div class="flex gap-3" style="margin-top:var(--space-4)">
+              <button id="start-cam-btn" class="btn btn-primary">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                Start Camera
+              </button>
+              <button id="stop-cam-btn" class="btn btn-danger hidden">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                Stop
+              </button>
+            </div>
+          </div>
+
+          <!-- Detections panel -->
+          <div>
+            <div class="card" style="height:100%">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Live Detections</div>
+                  <div class="card-subtitle" id="detection-count">0 signs detected</div>
+                </div>
+                <button id="clear-detections-btn" class="btn btn-ghost btn-sm">Clear</button>
+              </div>
+              <div class="detections-panel" id="detections-panel">
+                <div style="text-align:center;padding:var(--space-8) 0;color:var(--text-muted)">
+                  <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" style="margin:0 auto var(--space-3)"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <p class="text-sm">Start camera to see detections</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Tab -->
+      <div class="tab-panel" id="tab-upload">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-6)">
+          <div>
+            <div class="upload-zone" id="upload-zone">
+              <div class="upload-zone-icon">
+                <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <h3>Drag & drop a video file</h3>
+              <p>or click to browse — MP4, AVI, MOV, MKV, WebM (max 100 MB)</p>
+              <input type="file" id="video-file-input" accept="video/*" style="display:none"/>
+            </div>
+
+            <div id="upload-progress" class="hidden" style="margin-top:var(--space-5)">
+              <div class="flex justify-between text-sm text-muted mb-4">
+                <span id="upload-status-text">Processing…</span>
+                <span id="upload-pct">0%</span>
+              </div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="upload-progress-bar" style="width:0%"></div>
+              </div>
+            </div>
+
+            <div id="upload-result" class="hidden card" style="margin-top:var(--space-5)">
+              <div class="card-header">
+                <div class="card-title">Upload Results</div>
+              </div>
+              <div class="stat-grid" style="margin-bottom:0">
+                <div class="stat-card">
+                  <div class="stat-icon cyan"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M23 7 16 12 23 17V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+                  <div><div class="stat-value" id="res-frames">0</div><div class="stat-label">Frames processed</div></div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon amber"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                  <div><div class="stat-value" id="res-fps">0</div><div class="stat-label">Avg FPS</div></div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon green"><svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+                  <div><div class="stat-value" id="res-detections">0</div><div class="stat-label">Signs detected</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Detected Signs</div></div>
+            <div class="detections-panel" id="upload-detections-panel">
+              <div style="text-align:center;padding:var(--space-8) 0;color:var(--text-muted)">
+                <p class="text-sm">Upload a video to see results</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+  import { Auth, apiFetch, showToast, requireLogin, formatConfidence, populateSidebarUser } from './js/utils.js';
+  if (!requireLogin()) throw new Error('not logged in');
+  populateSidebarUser();
+
+  const user = Auth.getUser();
+  const sidebarRole = document.getElementById('sidebar-role');
+  if (sidebarRole) sidebarRole.textContent = user?.role || 'user';
+
+  // ── 2FA status check ─────────────────────────────────────────────
+  apiFetch('/user/profile').then(profile => {
+    const userObj = profile?.user || profile;
+    const is2fa = Boolean(userObj?.is_2fa_enabled);
+    if (userObj) {
+      const cached = Auth.getUser() || {};
+      Auth.setUser({ ...cached, ...userObj });
+    }
+    const warning = document.getElementById('twofa-warning-alert');
+    const pill = document.getElementById('user-2fa-pill');
+    if (!is2fa) {
+      if (warning) warning.classList.remove('hidden');
+      if (pill) pill.innerHTML = '<span class="badge badge-amber" style="font-size:0.75rem">2FA: Inactive</span>';
+    } else {
+      if (warning) warning.classList.add('hidden');
+      if (pill) pill.innerHTML = '<span class="badge badge-green" style="font-size:0.75rem">2FA: Active ✓</span>';
+    }
+  }).catch(() => {});
+
+  // ── Health check (show mode) ──────────────────────────────────────
+  apiFetch('/health').then(d => {
+    const badge = document.getElementById('ml-mode-badge');
+    if (d.ml_mode === 'real') {
+      badge.className = 'badge badge-green'; badge.textContent = 'REAL MODEL';
+    }
+    const mb = document.getElementById('mode-badge');
+    mb.textContent = d.ml_mode === 'real' ? 'REAL' : 'STUB';
+  }).catch(() => {});
+
+  // ── Tabs ──────────────────────────────────────────────────────────
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // ── Logout ────────────────────────────────────────────────────────
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await apiFetch('/auth/logout', { method:'POST' }); } catch {}
+    Auth.clear(); window.location.href = 'index.html';
+  });
+
+  // ── Live camera ───────────────────────────────────────────────────
+  let stream = null, recSessionId = null, frameLoop = null;
+  let frameInFlight = false;
+  let lastFrameSequence = 0;
+  let cameraCanvas = document.createElement("canvas");
+  let cameraCtx = cameraCanvas.getContext("2d", { alpha: false });
+  let totalDetections = 0, frameCount = 0, fpsHistory = [];
+
+  const videoEl      = document.getElementById('videoEl');
+  const canvasEl     = document.getElementById('canvasEl');
+  const placeholder  = document.getElementById('feed-placeholder');
+  const fpsBadge     = document.getElementById('fps-badge');
+  const modeBadge    = document.getElementById('mode-badge');
+  const feedWrapper  = document.getElementById('feed-wrapper');
+  const detectPanel  = document.getElementById('detections-panel');
+  const detectCount  = document.getElementById('detection-count');
+  const sessionBadge = document.getElementById('session-badge');
+
+  document.getElementById('start-cam-btn').addEventListener('click', startCamera);
+  document.getElementById('stop-cam-btn').addEventListener('click', stopCamera);
+  document.getElementById('clear-detections-btn').addEventListener('click', () => {
+    detectPanel.innerHTML = '';
+    totalDetections = 0;
+    detectCount.textContent = '0 signs detected';
+  });
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { width:1280, height:720 } });
+      videoEl.srcObject = stream;
+      await videoEl.play();
+      canvasEl.width  = videoEl.videoWidth  || 1280;
+      canvasEl.height = videoEl.videoHeight || 720;
+
+      placeholder.classList.add('hidden');
+      fpsBadge.classList.remove('hidden');
+      modeBadge.classList.remove('hidden');
+      feedWrapper.classList.add('active');
+      document.getElementById('start-cam-btn').classList.add('hidden');
+      document.getElementById('stop-cam-btn').classList.remove('hidden');
+
+      // Create recognition session
+      const sess = await apiFetch('/detection/start-session', { method:'POST', body:{ source_type:'live' } });
+      recSessionId = sess.rec_session_id;
+      sessionBadge.textContent = `Session #${recSessionId}`;
+
+      frameLoop = true;
+      processLiveFrame(); // Single-flight loop: never queue stale frames.
+    } catch (err) {
+      showToast('Camera access denied: ' + err.message, 'error');
+    }
+  }
+
+  async function stopCamera() {
+    frameLoop = null;
+    frameInFlight = false;
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+
+    if (recSessionId) {
+      const avgFps = fpsHistory.length ? (fpsHistory.reduce((a,b)=>a+b,0)/fpsHistory.length).toFixed(1) : null;
+      await apiFetch(`/detection/end-session/${recSessionId}`, { method:'POST', body:{ avg_fps: parseFloat(avgFps)||null } });
+      recSessionId = null;
+    }
+
+    videoEl.srcObject = null;
+    feedWrapper.classList.remove('active');
+    placeholder.classList.remove('hidden');
+    fpsBadge.classList.add('hidden');
+    modeBadge.classList.add('hidden');
+    document.getElementById('start-cam-btn').classList.remove('hidden');
+    document.getElementById('stop-cam-btn').classList.add('hidden');
+    sessionBadge.textContent = 'No session';
+    showToast('Session ended', 'info');
+  }
+
+  async function processLiveFrame() {
+    // Only one request can be active; this prevents stale frames and backend overload.
+    if (!frameLoop || frameInFlight || !stream || !videoEl.videoWidth) return;
+    frameInFlight = true;
+    const started = performance.now();
+    const frameSequence = ++lastFrameSequence;
+    try {
+      const targetWidth = Math.min(640, videoEl.videoWidth);
+      const targetHeight = Math.max(1, Math.round(targetWidth * videoEl.videoHeight / videoEl.videoWidth));
+      if (cameraCanvas.width !== targetWidth || cameraCanvas.height !== targetHeight) {
+        cameraCanvas.width = targetWidth; cameraCanvas.height = targetHeight;
+      }
+      cameraCtx.drawImage(videoEl, 0, 0, targetWidth, targetHeight);
+      const b64 = cameraCanvas.toDataURL('image/jpeg', 0.65).split(',')[1];
+      const result = await apiFetch('/detection/frame', { method:'POST', body:{ frame: b64, rec_session_id: recSessionId } });
+      if (!frameLoop) return;
+      const ctx = canvasEl.getContext('2d');
+      if (result.annotated_frame) {
+        const img = new Image();
+        img.onload = () => { if (frameLoop && frameSequence === lastFrameSequence) ctx.drawImage(img, 0, 0, canvasEl.width, canvasEl.height); };
+        img.src = 'data:image/jpeg;base64,' + result.annotated_frame;
+      }
+      const elapsed = (performance.now() - started) / 1000;
+      const fps = result.fps || (elapsed > 0 ? 1 / elapsed : 0);
+      fpsBadge.textContent = `${Number(fps).toFixed(1)} FPS · ${Number(result.latency_ms || elapsed * 1000).toFixed(0)} ms`;
+      modeBadge.textContent = result.mode === 'real' ? 'REAL' : 'STUB';
+      fpsHistory.push(Number(fps)); if (fpsHistory.length > 30) fpsHistory.shift();
+      if (result.detections?.length) {
+        totalDetections += result.detections.length;
+        detectCount.textContent = `${totalDetections} signs detected`;
+        result.detections.forEach(d => renderDetectionCard(d, detectPanel));
+        while (detectPanel.children.length > 20) detectPanel.removeChild(detectPanel.lastChild);
+      }
+    } catch (_) {
+      // Transient network errors do not terminate the live camera loop.
+    } finally {
+      frameInFlight = false;
+      // Schedule only after the request finishes, so frames cannot accumulate in a queue.
+      if (frameLoop) frameLoop = setTimeout(() => { frameLoop = true; processLiveFrame(); }, 20);
+    }
+  }
+
+  function renderDetectionCard(d, container) {
+    const pct = Math.round(d.confidence * 100);
+    const card = document.createElement('div');
+    card.className = 'detection-card';
+    card.innerHTML = `
+      <div class="detection-card-name" style="display:flex;align-items:center;gap:10px">${d.logo_url ? `<img src="${escHtml(d.logo_url)}" alt="" width="44" height="44" style="object-fit:contain" onerror="this.style.display='none'">` : ''}<span>${escHtml(d.sign_name)}</span></div>
+      <div class="detection-card-desc">${escHtml(d.sign_description || '')}</div>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar"><div class="confidence-fill" style="width:${pct}%"></div></div>
+        <span class="confidence-pct">${pct}%</span>
+      </div>`;
+    container.insertBefore(card, container.firstChild);
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Upload ────────────────────────────────────────────────────────
+  const uploadZone  = document.getElementById('upload-zone');
+  const fileInput   = document.getElementById('video-file-input');
+
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+  uploadZone.addEventListener('drop', e => { e.preventDefault(); uploadZone.classList.remove('drag-over'); handleUpload(e.dataTransfer.files[0]); });
+  fileInput.addEventListener('change', () => handleUpload(fileInput.files[0]));
+
+  async function handleUpload(file) {
+    if (!file) return;
+    const allowed = ['video/mp4','video/avi','video/x-msvideo','video/quicktime','video/mkv','video/webm','video/x-matroska'];
+    if (!file.type.startsWith('video/')) { showToast('Please upload a video file.', 'error'); return; }
+    if (file.size > 100*1024*1024) { showToast('File too large (max 100 MB).', 'error'); return; }
+
+    document.getElementById('upload-progress').classList.remove('hidden');
+    document.getElementById('upload-result').classList.add('hidden');
+    document.getElementById('upload-detections-panel').innerHTML = '<div style="text-align:center;padding:var(--space-6);color:var(--text-muted)"><p class="text-sm">Processing…</p></div>';
+
+    const statusText = document.getElementById('upload-status-text');
+    const pctEl = document.getElementById('upload-pct');
+    const bar = document.getElementById('upload-progress-bar');
+
+    // Fake progress while uploading
+    let progress = 0;
+    const ticker = setInterval(() => {
+      progress = Math.min(progress + 2, 90);
+      bar.style.width = progress + '%';
+      pctEl.textContent = progress + '%';
+      statusText.textContent = progress < 50 ? 'Uploading…' : 'Processing frames…';
+    }, 200);
+
+    try {
+      const fd = new FormData();
+      fd.append('video', file);
+
+      const token = Auth.getToken();
+      const res = await fetch('http://127.0.0.1:5000/api/detection/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: fd
+      });
+      const data = await res.json();
+      if (!res.ok) throw { message: data.error || 'Upload failed' };
+
+      clearInterval(ticker);
+      bar.style.width = '100%'; pctEl.textContent = '100%';
+
+      document.getElementById('res-frames').textContent     = data.frames_processed || 0;
+      document.getElementById('res-fps').textContent        = data.avg_fps || 0;
+      document.getElementById('res-detections').textContent = data.detections_found || 0;
+      document.getElementById('upload-result').classList.remove('hidden');
+
+      const panel = document.getElementById('upload-detections-panel');
+      panel.innerHTML = '';
+      if (data.detections?.length) {
+        data.detections.forEach(d => renderDetectionCard(d, panel));
+      } else {
+        panel.innerHTML = '<p class="text-sm text-muted text-center" style="padding:var(--space-6)">No signs detected</p>';
+      }
+      showToast('Video processed successfully!', 'success');
+    } catch (err) {
+      clearInterval(ticker);
+      showToast(err.message || 'Upload failed', 'error');
+    }
+  }
+</script>
+</body>
+</html>

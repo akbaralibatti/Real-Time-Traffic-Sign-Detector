@@ -1,0 +1,8 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+Backend/traffic_sign.db
+Backend/traffic_sign.backup-*.db
+Backend/uploads/

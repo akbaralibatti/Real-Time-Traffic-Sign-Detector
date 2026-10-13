@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile & Security — Real-time Traffic Sign Recognition System</title>
+  <meta name="description" content="Manage your account profile, security settings, 2FA, and active sessions."/>
+  <link rel="stylesheet" href="css/style.css?v=20261012"/>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="app-layout">
+  <!-- ── Sidebar ────────────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 36 36" fill="none" style="color:var(--accent)">
+        <circle cx="18" cy="18" r="18" fill="var(--accent-subtle)"/>
+        <polygon points="18,6 30,27 6,27" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+        <circle cx="18" cy="22" r="2" fill="currentColor"/>
+        <rect x="17" y="13" width="2" height="6" rx="1" fill="currentColor"/>
+      </svg>
+      <div>
+        <div style="font-size:.9rem;font-weight:700;line-height:1.2">TrafficSign <span>System</span></div>
+        <div style="font-size:.68rem;color:var(--text-muted)">Real-time Recognition</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <span class="sidebar-section-label">Main</span>
+      <a href="dashboard.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="history.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Session History
+      </a>
+      <a href="signs.html" class="nav-item">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Sign Dictionary
+      </a>
+
+      <span class="sidebar-section-label" style="margin-top:var(--space-4)">Account</span>
+      <a href="profile.html" class="nav-item active">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile & Security
+      </a>
+
+      <div id="admin-nav-section" class="hidden">
+        <span class="sidebar-section-label" style="margin-top:var(--space-4)">Administration</span>
+        <a href="admin/index.html" class="nav-item">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Admin Console
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="flex items-center gap-3" style="margin-bottom:var(--space-3)">
+        <div class="avatar" id="sidebar-avatar">--</div>
+        <div>
+          <div style="font-size:.88rem;font-weight:600" id="sidebar-username">Loading…</div>
+          <div class="text-xs text-muted" id="sidebar-role">user</div>
+        </div>
+      </div>
+      <button id="logout-btn" class="btn btn-ghost btn-sm btn-full" style="justify-content:flex-start;gap:var(--space-3)">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ───────────────────────────────────────────────── -->
+  <div class="main-content">
+    <header class="topbar">
+      <div class="topbar-title">Account Settings & Security</div>
+      <div class="topbar-actions">
+        <span class="badge badge-green" id="role-badge">User</span>
+      </div>
+    </header>
+
+    <main class="page-body">
+      <div class="page-header">
+        <h1>Profile & Security</h1>
+        <p>Manage your account credentials, multi-factor authentication, and active browser sessions.</p>
+      </div>
+
+      <div class="grid grid-2 gap-6" style="margin-bottom:var(--space-6)">
+        <!-- ── Personal Information Card ────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Profile Information</h2>
+              <p class="card-subtitle">Update your username and contact email address.</p>
+            </div>
+            <div class="avatar avatar-lg" id="profile-avatar" style="width:48px;height:48px;font-size:1.1rem">--</div>
+          </div>
+
+          <form id="profile-form">
+            <div class="form-group">
+              <label class="form-label" for="profile-username">Username</label>
+              <input type="text" id="profile-username" class="form-input" required minlength="3" maxlength="50"/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="profile-email">Email Address</label>
+              <input type="email" id="profile-email" class="form-input" required/>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Account Created</label>
+              <input type="text" id="profile-created-at" class="form-input" disabled style="opacity:.6;cursor:not-allowed"/>
+            </div>
+
+            <button type="submit" id="save-profile-btn" class="btn btn-primary">
+              Save Changes
+            </button>
+          </form>
+        </div>
+
+        <!-- ── Security & 2FA Card ──────────────────────────────────── -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Two-Factor Authentication</h2>
+              <p class="card-subtitle">Protect your account using TOTP Google Authenticator.</p>
+            </div>
+            <span id="two-factor-status-badge" class="badge badge-muted">Checking…</span>
+          </div>
+
+          <div style="background:var(--bg-elevated);padding:var(--space-4);border-radius:var(--radius-md);margin-bottom:var(--space-6)">
+            <div class="flex items-center gap-3">
+              <div style="width:36px;height:36px;border-radius:var(--radius-md);background:var(--accent-subtle);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:.9rem" id="tfa-header-text">Two-Factor Security</div>
+                <div class="text-xs text-muted" id="tfa-desc-text">Requires a 6-digit one-time code during every sign-in.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <a href="setup-2fa.html" id="setup-2fa-link" class="btn btn-primary btn-sm">
+              Configure 2FA
+            </a>
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:var(--space-6) 0"/>
+
+          <!-- Password change -->
+          <h3 class="card-title" style="font-size:.95rem;margin-bottom:var(--space-3)">Change Password</h3>
+          <form id="password-form">
+            <div class="form-group">
+              <label class="form-label" for="current-pwd">Current Password</label>
+              <input type="password" id="current-pwd" class="form-input" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-pwd">New Password</label>
+              <input type="password" id="new-pwd" class="form-input" required minlength="8"/>
+              <div class="pwd-strength" style="margin-top:var(--space-2)">
+                <div class="pwd-strength-bar"><div class="pwd-strength-fill" id="pwd-fill"></div></div>
+                <span class="pwd-strength-label" id="pwd-label">Min 8 chars</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirm-new-pwd">Confirm New Password</label>
+              <input type="password" id="confirm-new-pwd" class="form-input" required/>
+            </div>
+            <button type="submit" id="change-pwd-btn" class="btn btn-secondary btn-sm">
+              Update Password
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ── Active Sessions Card ─────────────────────────────────── -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Active Login Sessions</h2>
+            <p class="card-subtitle">Manage devices currently logged in to your account. Revoking a session signs that device out immediately.</p>
+          </div>
+          <button id="refresh-sessions-btn" class="btn btn-secondary btn-sm">
+            Refresh
+          </button>
+        </div>
+
+        <div class="table-container">
+          <table class="table" id="sessions-table">
+            <thead>
+              <tr>
+                <th>Session ID</th>
+                <th>Device / User Agent</th>
+                <th>IP Address</th>
+                <th>Created</th>
+                <th>Last Active</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="sessions-tbody">
+              <tr>
+                <td colspan="7" style="text-align:center;padding:var(--space-6);color:var(--text-muted)">
+                  Loading active sessions…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+  import { Auth, apiFetch, showToast, requireLogin, formatDate } from './js/utils.js';
+
+  if (!requireLogin()) { /* redirected */ }
+
+  const currentUser = Auth.getUser();
+  if (currentUser) {
+    document.getElementById('sidebar-username').textContent = currentUser.username;
+    document.getElementById('sidebar-role').textContent = currentUser.role || 'user';
+    document.getElementById('sidebar-avatar').textContent = (currentUser.username || 'TV').slice(0, 2).toUpperCase();
+    document.getElementById('role-badge').textContent = currentUser.role === 'admin' ? 'Administrator' : 'User';
+    if (currentUser.role === 'admin') {
+      document.getElementById('admin-nav-section')?.classList.remove('hidden');
+    }
+  }
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    try { await apiFetch('/auth/logout', { method: 'POST' }); } catch (_) {}
+    Auth.clear();
+    window.location.href = 'index.html';
+  });
+
+  // Load user profile
+  async function loadProfile() {
+    try {
+      const data = await apiFetch('/user/profile');
+      const user = data.user;
+      document.getElementById('profile-username').value = user.username || '';
+      document.getElementById('profile-email').value = user.email || '';
+      document.getElementById('profile-created-at').value = formatDate(user.created_at);
+      document.getElementById('profile-avatar').textContent = (user.username || 'TV').slice(0, 2).toUpperCase();
+
+      const tfaBadge = document.getElementById('two-factor-status-badge');
+      const tfaHeader = document.getElementById('tfa-header-text');
+      const tfaDesc = document.getElementById('tfa-desc-text');
+      const tfaLink = document.getElementById('setup-2fa-link');
+
+      if (user.is_2fa_enabled) {
+        tfaBadge.className = 'badge badge-green';
+        tfaBadge.textContent = 'Enabled';
+        tfaHeader.textContent = 'Two-Factor Authentication is Active';
+        tfaDesc.textContent = 'Your account is securely protected by TOTP verification.';
+        tfaLink.textContent = 'Reconfigure 2FA';
+      } else {
+        tfaBadge.className = 'badge badge-amber';
+        tfaBadge.textContent = 'Disabled';
+        tfaHeader.textContent = 'Two-Factor Authentication is Disabled';
+        tfaDesc.textContent = 'Enable TOTP authenticator to add an extra layer of defense.';
+        tfaLink.textContent = 'Enable 2FA Now';
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to load profile', 'error');
+    }
+  }
+
+  // Update profile
+  document.getElementById('profile-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('save-profile-btn');
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+
+    const username = document.getElementById('profile-username').value.trim();
+    const email = document.getElementById('profile-email').value.trim();
+
+    try {
+      const res = await apiFetch('/user/profile', {
+        method: 'PATCH',
+        body: { username, email }
+      });
+      showToast('Profile updated successfully!', 'success');
+      const updatedUser = { ...currentUser, username, email };
+      Auth.setUser(updatedUser);
+      document.getElementById('sidebar-username').textContent = username;
+      document.getElementById('sidebar-avatar').textContent = username.slice(0, 2).toUpperCase();
+      document.getElementById('profile-avatar').textContent = username.slice(0, 2).toUpperCase();
+    } catch (err) {
+      showToast(err.message || 'Update failed', 'error');
+    } finally {
+      btn.classList.remove('btn-loading');
+      btn.disabled = false;
+    }
+  });
+
+  // Password strength meter
+  const newPwd = document.getElementById('new-pwd');
+  const fill = document.getElementById('pwd-fill');
+  const label = document.getElementById('pwd-label');
+  newPwd.addEventListener('input', () => {
+    const val = newPwd.value;
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['var(--danger)', 'var(--amber)', 'var(--accent)', 'var(--success)'];
+    const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+    if (!val) {
+      fill.style.width = '0%';
+      label.textContent = 'Min 8 chars';
+    } else {
+      fill.style.width = `${(score / 4) * 100}%`;
+      fill.style.background = colors[Math.max(0, score - 1)];
+      label.textContent = texts[Math.max(0, score - 1)];
+    }
+  });
+
+  // Change password
+  document.getElementById('password-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const current_password = document.getElementById('current-pwd').value;
+    const new_password = document.getElementById('new-pwd').value;
+    const confirm = document.getElementById('confirm-new-pwd').value;
+
+    if (new_password !== confirm) {
+      showToast('New passwords do not match.', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('change-pwd-btn');
+    btn.classList.add('btn-loading');
+    btn.disabled = true;
+
+    try {
+      await apiFetch('/user/change-password', {
+        method: 'POST',
+        body: { current_password, new_password }
+      });
+      showToast('Password changed successfully!', 'success');
+      document.getElementById('password-form').reset();
+      fill.style.width = '0%';
+      label.textContent = 'Min 8 chars';
+    } catch (err) {
+      showToast(err.message || 'Password update failed', 'error');
+    } finally {
+      btn.classList.remove('btn-loading');
+      btn.disabled = false;
+    }
+  });
+
+  // Load active sessions
+  async function loadSessions() {
+    const tbody = document.getElementById('sessions-tbody');
+    try {
+      const data = await apiFetch('/user/sessions');
+      const sessions = data.sessions || [];
+      if (!sessions.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-6);color:var(--text-muted)">No active sessions found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = sessions.map(s => {
+        return `
+          <tr>
+            <td><code style="font-family:var(--font-mono);font-size:.8rem;color:var(--accent)">#${s.session_id}</code></td>
+            <td style="font-size:.85rem;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.user_agent || 'Browser'}">
+              ${s.user_agent || 'Web Browser'}
+            </td>
+            <td><code style="font-family:var(--font-mono);font-size:.8rem">${s.ip_address || '127.0.0.1'}</code></td>
+            <td style="font-size:.85rem">${formatDate(s.created_at)}</td>
+            <td style="font-size:.85rem">${formatDate(s.last_activity || s.created_at)}</td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td>
+              <button class="btn btn-danger btn-sm revoke-btn" data-id="${s.session_id}">
+                Revoke
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.querySelectorAll('.revoke-btn').forEach(b => {
+        b.addEventListener('click', () => revokeSession(b.dataset.id));
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:var(--space-6);color:var(--danger)">Failed to load sessions: ${err.message || 'Error'}</td></tr>`;
+    }
+  }
+
+  async function revokeSession(sessionId) {
+    if (!confirm(`Are you sure you want to revoke session #${sessionId}? This device will be signed out.`)) return;
+    try {
+      await apiFetch(`/user/sessions/${sessionId}`, { method: 'DELETE' });
+      showToast('Session revoked successfully.', 'success');
+      loadSessions();
+    } catch (err) {
+      showToast(err.message || 'Failed to revoke session', 'error');
+    }
+  }
+
+  document.getElementById('refresh-sessions-btn').addEventListener('click', loadSessions);
+
+  loadProfile();
+  loadSessions();
+</script>
+</body>
+</html>
